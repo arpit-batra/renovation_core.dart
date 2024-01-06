@@ -13,7 +13,7 @@ import 'errors.dart';
 
 /// Controller for getting and setting key-value pair in Frappé
 class FrappeDefaultsController extends DefaultsController {
-  FrappeDefaultsController(RenovationConfig config) : super(config);
+  FrappeDefaultsController(RenovationConfig? config) : super(config);
 
   /// Renovation specific settings
   static final _renovationCustomSettings = ['disableSubmission'];
@@ -27,10 +27,10 @@ class FrappeDefaultsController extends DefaultsController {
   /// Throws [NotLoggedInUser] if the user is not logged in.
   @override
   Future<RequestResponse<dynamic>> getDefault(
-      {@required String key, String parent = '__default'}) async {
-    await getFrappe().checkAppInstalled(features: ['getDefault']);
+      {required String key, String? parent = '__default'}) async {
+    await getFrappe()!.checkAppInstalled(features: ['getDefault']);
 
-    if (!config.coreInstance.auth.isLoggedIn) throw NotLoggedInUser();
+    if (!config!.coreInstance.auth!.isLoggedIn) throw NotLoggedInUser();
 
     if (_renovationCustomSettings.contains(key)) {
       key = 'renovation:$key';
@@ -38,15 +38,15 @@ class FrappeDefaultsController extends DefaultsController {
 
     final response = await Request.initiateRequest(
         url:
-            '${config.hostUrl}/api/method/renovation_core.utils.client.get_default',
+            '${config!.hostUrl}/api/method/renovation_core.utils.client.get_default',
         method: HttpMethod.POST,
         contentType: ContentTypeLiterals.APPLICATION_X_WWW_FORM_URLENCODED,
         data: <String, dynamic>{'key': key, 'parent': parent});
     if (response.isSuccess) {
-      return RequestResponse.success<dynamic>(response.data.message,
+      return RequestResponse.success<dynamic>(response.data!.message,
           rawResponse: response.rawResponse);
     } else {
-      return RequestResponse.fail<dynamic>(handleError(null, response.error));
+      return RequestResponse.fail<dynamic>(handleError(null, response.error!));
     }
   }
 
@@ -59,10 +59,10 @@ class FrappeDefaultsController extends DefaultsController {
   /// Throws [NotLoggedInUser] if the user is not logged in.
   @override
   Future<RequestResponse<dynamic>> setDefaults(
-      {@required String key,
-      @required dynamic value,
-      String parent = '__default'}) async {
-    if (!config.coreInstance.auth.isLoggedIn) throw NotLoggedInUser();
+      {required String key,
+      required dynamic value,
+      String? parent = '__default'}) async {
+    if (!config!.coreInstance.auth!.isLoggedIn) throw NotLoggedInUser();
 
     dynamic _value;
 
@@ -90,16 +90,16 @@ class FrappeDefaultsController extends DefaultsController {
     }
 
     final response = await Request.initiateRequest(
-        url: '${config.hostUrl}/api/method/frappe.client.set_default',
+        url: '${config!.hostUrl}/api/method/frappe.client.set_default',
         method: HttpMethod.POST,
         isFrappeResponse: false,
         contentType: ContentTypeLiterals.APPLICATION_X_WWW_FORM_URLENCODED,
         data: <String, dynamic>{'key': key, 'value': _value, 'parent': parent});
 
     if (response.isSuccess) {
-      return RequestResponse.success<dynamic>(response.data.message);
+      return RequestResponse.success<dynamic>(response.data!.message);
     } else {
-      return RequestResponse.fail<dynamic>(handleError(null, response.error));
+      return RequestResponse.fail<dynamic>(handleError(null, response.error!));
     }
   }
 
@@ -107,6 +107,6 @@ class FrappeDefaultsController extends DefaultsController {
   void clearCache() {}
 
   @override
-  ErrorDetail handleError(String errorId, ErrorDetail error) =>
+  ErrorDetail handleError(String? errorId, ErrorDetail error) =>
       RenovationController.genericError(error);
 }

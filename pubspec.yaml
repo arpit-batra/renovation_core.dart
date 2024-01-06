@@ -4,24 +4,25 @@ version: 1.2.4
 homepage: https://github.com/leam-tech/renovation_core.dart
 
 environment:
-  sdk: '>=2.6.0 <3.0.0'
+  sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
-  http: ^0.12.0
-  json_annotation: ^3.0.0
-  rxdart: ^0.23.1
-  socket_io_client: ^0.9.8
-  dio: ^3.0.8
-  dio_cookie_manager: ^1.0.0
-  cookie_jar: ^1.0.1
+  http: ^0.13.6
+  json_annotation: ^4.8.1
+  rxdart: ^0.27.7
+  socket_io_client: ^2.0.3+1
+  dio: ^5.4.0
+  dio_cookie_manager: ^3.1.1
+  cookie_jar: ^4.0.8
   path: ^1.6.4
-  logger: ^0.8.3
+  logger: ^2.0.2+1
   meta: ^1.1.8
-  enum_to_string: ^1.0.9
+  enum_to_string: ^2.0.1
   pedantic: ^1.8.0
-  zxcvbn: ^0.0.1
+  zxcvbn: ^1.0.0
+  collection: ^1.15.0-nullsafety.4
 
 dev_dependencies:
   test: ^1.12.0
-  build_runner: ^1.7.4
-  json_serializable: ^3.0.0
+  build_runner: ^2.3.3
+  json_serializable: ^6.6.2

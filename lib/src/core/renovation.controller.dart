@@ -17,7 +17,7 @@ import 'request.dart';
 abstract class RenovationController implements IErrorHandler {
   RenovationController(this.config);
 
-  RenovationConfig config;
+  RenovationConfig? config;
   static const String GENERIC_ERROR_TITLE =
       'Generic Error, investigate .info for more details';
 
@@ -29,14 +29,14 @@ abstract class RenovationController implements IErrorHandler {
   static ErrorDetail genericError(ErrorDetail errorDetail) => errorDetail
     ..title = errorDetail.title ?? RenovationController.GENERIC_ERROR_TITLE
     ..type = errorDetail.type ?? RenovationError.GenericError
-    ..info = (errorDetail.info..httpCode = errorDetail?.info?.httpCode ?? 400);
+    ..info = (errorDetail.info?..httpCode = errorDetail.info?.httpCode ?? 400);
 
   /// Clears the cache or residual objects.
   void clearCache();
 
   /// Returns the configured host URL towards the backend
-  String getHostUrl() => config.hostUrl;
+  String? getHostUrl() => config!.hostUrl;
 
   /// Gets the reference to the [Renovation] instance
-  Renovation getCore() => config.coreInstance;
+  Renovation getCore() => config!.coreInstance;
 }

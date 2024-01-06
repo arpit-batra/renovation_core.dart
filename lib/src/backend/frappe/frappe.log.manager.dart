@@ -10,7 +10,7 @@ import 'errors.dart';
 
 /// Class for handling Frappe-specific Logs
 class FrappeLogManager extends RenovationController implements LogManager {
-  FrappeLogManager(RenovationConfig config) : super(config);
+  FrappeLogManager(RenovationConfig? config) : super(config);
 
   /// The private def. tags
   final List<String> _defaultTags = [];
@@ -22,12 +22,12 @@ class FrappeLogManager extends RenovationController implements LogManager {
   void setDefaultTags(List<String> tags) => _defaultTags.setAll(0, tags);
 
   @override
-  ErrorDetail handleError(String errorId, ErrorDetail error) =>
+  ErrorDetail handleError(String? errorId, ErrorDetail error) =>
       RenovationController.genericError(error);
 
   @override
-  Future<RequestResponse<FrappeLog>> error(
-      {@required String content, String title, List<String> tags}) {
+  Future<RequestResponse<FrappeLog?>> error(
+      {String? content, String? title, List<String>? tags}) {
     if (content == null || content.isEmpty) {
       throw EmptyContentError();
     }
@@ -39,8 +39,8 @@ class FrappeLogManager extends RenovationController implements LogManager {
   }
 
   @override
-  Future<RequestResponse<FrappeLog>> info(
-      {@required String content, String title, List<String> tags}) {
+  Future<RequestResponse<FrappeLog?>> info(
+      {String? content, String? title, List<String>? tags}) {
     if (content == null || content.isEmpty) {
       throw EmptyContentError();
     }
@@ -52,8 +52,8 @@ class FrappeLogManager extends RenovationController implements LogManager {
   }
 
   @override
-  Future<RequestResponse<FrappeLog>> warning(
-      {@required String content, String title, List<String> tags}) {
+  Future<RequestResponse<FrappeLog?>> warning(
+      {String? content, String? title, List<String>? tags}) {
     if (content == null || content.isEmpty) {
       throw EmptyContentError();
     }
@@ -65,8 +65,8 @@ class FrappeLogManager extends RenovationController implements LogManager {
   }
 
   @override
-  Future<RequestResponse<FrappeLog>> logRequest(
-      {@required RequestResponse<dynamic> r, List<String> tags}) {
+  Future<RequestResponse<FrappeLog?>> logRequest(
+      {RequestResponse<dynamic>? r, List<String>? tags}) {
     if (r == null) {
       throw EmptyResponseError();
     }
@@ -75,12 +75,12 @@ class FrappeLogManager extends RenovationController implements LogManager {
       _tags.addAll(tags);
     }
 
-    final req = r.rawResponse.request;
+    final req = r.rawResponse!;
     final requestInfo =
         'Headers:\n${req.headers}\nParams:\n${json.encode(req.data)}';
 
     final headersInfo = <List<String>>[];
-    r.rawResponse.headers.map.forEach((String k, List<String> value) {
+    r.rawResponse!.headers.map.forEach((String k, List<String> value) {
       headersInfo.add([k, ...value]);
     });
     var header = '';
@@ -89,7 +89,7 @@ class FrappeLogManager extends RenovationController implements LogManager {
     });
 
     final responseInfo =
-        'Status: ${r.rawResponse.statusCode}\nHeaders:\n$header\n\nBody:\n${json.encode(r.rawResponse.data)}';
+        'Status: ${r.rawResponse!.statusCode}\nHeaders:\n$header\n\nBody:\n${json.encode(r.rawResponse!.data)}';
 
     return invokeLogger(
         cmd: 'renovation_core.utils.logging.log_client_request',
@@ -99,18 +99,18 @@ class FrappeLogManager extends RenovationController implements LogManager {
   }
 
   @override
-  Future<RequestResponse<FrappeLog>> invokeLogger(
-      {@required String cmd,
-      String content,
-      String title,
-      List<String> tags,
-      String request,
-      String response}) async {
-    await getFrappe().checkAppInstalled(features: ['Logger']);
+  Future<RequestResponse<FrappeLog?>> invokeLogger(
+      {String? cmd,
+      String? content,
+      String? title,
+      List<String>? tags,
+      String? request,
+      String? response}) async {
+    await getFrappe()!.checkAppInstalled(features: ['Logger']);
 
     tags ?? _defaultTags;
 
-    final logResponse = await config.coreInstance.call(<String, dynamic>{
+    final logResponse = await config!.coreInstance.call(<String, dynamic>{
       'cmd': cmd,
       'content': content,
       'title': title,
@@ -120,17 +120,17 @@ class FrappeLogManager extends RenovationController implements LogManager {
     });
 
     if (logResponse.isSuccess) {
-      List<dynamic> tagsDoc = logResponse.data.message['tags'];
-      if (logResponse.data.message != null && tagsDoc != null) {
-        final tags = tagsDoc.map<String>((dynamic x) => x['tag']).toList();
+      List<dynamic>? tagsDoc = logResponse.data!.message['tags'];
+      if (logResponse.data!.message != null && tagsDoc != null) {
+        final tags = tagsDoc.map<String?>((dynamic x) => x['tag']).toList();
 
-        logResponse.data.message.addAll({'tags_list': tags});
+        logResponse.data!.message.addAll({'tags_list': tags});
       }
       return RequestResponse.success<FrappeLog>(
-          FrappeLog.fromJson(logResponse.data.message),
+          FrappeLog.fromJson(logResponse.data!.message),
           rawResponse: logResponse.rawResponse);
     } else {
-      return RequestResponse.fail(handleError(null, logResponse.error));
+      return RequestResponse.fail(handleError(null, logResponse.error!));
     }
   }
 }

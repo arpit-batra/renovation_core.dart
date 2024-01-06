@@ -6,26 +6,26 @@ import '../core/jsonable.dart';
 
 abstract class UploadFileParams extends JSONAble {
   UploadFileParams(
-      {@required this.file,
-      @required this.fileName,
+      {required this.file,
+      required this.fileName,
       this.fileData,
       this.fileSize});
 
   @JsonKey(ignore: true)
   dynamic file;
   @JsonKey(name: 'filename')
-  String fileName;
+  String? fileName;
   @JsonKey(name: 'filedata')
-  String fileData;
+  String? fileData;
   @JsonKey(name: 'file_size')
-  int fileSize;
+  int? fileSize;
 }
 
 abstract class UploadFileResponse extends JSONAble {
   @JsonKey(name: 'file_name')
-  String fileName;
+  String? fileName;
   @JsonKey(name: 'file_url')
-  String fileUrl;
+  String? fileUrl;
 }
 
 enum UploadingStatus { ready, uploading, completed, error, detail_error }
@@ -39,9 +39,9 @@ enum ErrorEvent {
 }
 
 abstract class UploadFileStatus extends JSONAble{
-  UploadingStatus status;
-  bool hasProgress;
-  num progress;
-  ErrorEvent error;
-  String filename;
+  UploadingStatus? status;
+  bool? hasProgress;
+  num? progress;
+  ErrorEvent? error;
+  String? filename;
 }

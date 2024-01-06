@@ -15,7 +15,7 @@ class RenovationConfig {
   RenovationConfig(this.coreInstance, this.backend, this.hostUrl, this.logger);
 
   /// A static instance of itself
-  static RenovationConfig renovationInstance;
+  static RenovationConfig? renovationInstance;
 
   /// A setting property to disable submission used in defaults
   bool disableSubmission = false;
@@ -27,7 +27,7 @@ class RenovationConfig {
   Renovation coreInstance;
 
   /// The URL of the targeted backend
-  String hostUrl;
+  String? hostUrl;
 
   /// An instance of [Logger] to prettify printing logs
   Logger logger;

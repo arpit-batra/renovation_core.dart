@@ -10,13 +10,13 @@ import 'frappe/interfaces.dart';
 /// Class containing permission properties/caches & methods
 abstract class PermissionController<K extends RenovationDocument>
     extends RenovationController {
-  PermissionController(RenovationConfig config) : super(config);
+  PermissionController(RenovationConfig? config) : super(config);
 
   /// Holds the basic permissions defined by [BasicPermInfo].
-  BasicPermInfo basicPerms;
+  BasicPermInfo? basicPerms;
 
   /// Holds the permissions for each doctype as a form of caching.
-  Map<String, List<DocPerm>> doctypePerms = <String, List<DocPerm>>{};
+  Map<String?, List<DocPerm>> doctypePerms = <String?, List<DocPerm>>{};
 
   /// Resets the [basicPerms] and [doctypePerms] properties.
   ///
@@ -24,7 +24,7 @@ abstract class PermissionController<K extends RenovationDocument>
   @override
   void clearCache() {
     basicPerms = null;
-    doctypePerms = <String, List<DocPerm>>{};
+    doctypePerms = <String?, List<DocPerm>>{};
   }
 
   /// Loads the basic params from the backend for the current user.
@@ -32,20 +32,20 @@ abstract class PermissionController<K extends RenovationDocument>
 
   /// Returns the list permission of the current user of a certain [doctype].
   Future<RequestResponse<List<dynamic>>> getPerm<T extends K>(
-      {@required String doctype, T document});
+      {required String doctype, T? document});
 
   /// Returns boolean whether the user has perm [pType] for a particular [doctype].
   Future<bool> hasPerm(
-      {@required String doctype,
-      @required PermissionType pType,
-      int permLevel,
-      String docname});
+      {required String? doctype,
+      required PermissionType pType,
+      int? permLevel,
+      String? docname});
 
   /// Similar to [hasPerm] but instead can accept a list of perms [pTypes].
   Future<bool> hasPerms(
-      {@required String doctype,
-      @required List<PermissionType> pTypes,
-      String docname});
+      {required String doctype,
+      required List<PermissionType> pTypes,
+      String? docname});
 
   /// Check if the user can create a doctype.
   Future<bool> canCreate(String doctype) async =>
@@ -103,7 +103,7 @@ abstract class PermissionController<K extends RenovationDocument>
     final perms = doctypePerms[doctype];
     if (perms != null) return perms[0].submit;
 
-    config.logger.e('Renovation Core'
+    config!.logger.e('Renovation Core'
         'Permissions'
         'Permission Cache not loaded to retrieve correct perm for canSubmit');
     // no perms
@@ -117,7 +117,7 @@ abstract class PermissionController<K extends RenovationDocument>
     // not provided in bootinfo
     final perms = doctypePerms[doctype];
     if (perms != null) return perms[0].amend;
-    config.logger.e('Renovation Core'
+    config!.logger.e('Renovation Core'
         'Permissions'
         'Permission Cache not loaded to retrieve correct perm for canAmend');
     // no perms
@@ -130,7 +130,7 @@ abstract class PermissionController<K extends RenovationDocument>
   Future<bool> canRecursiveDelete(String doctype) async {
     final perms = doctypePerms[doctype];
     if (perms != null) return perms[0].recursiveDelete;
-    config.logger.e('Renovation Core'
+    config!.logger.e('Renovation Core'
         'Permissions'
         'Permission Cache not loaded to retrieve correct perm for canRecursiveDelete');
     // no perms
@@ -144,7 +144,7 @@ abstract class PermissionController<K extends RenovationDocument>
       String arrayProperty, String doctype) async {
     if (!_validateBasicPerms()) await loadBasicPerms();
 
-    final doctypeList = basicPerms?.toJson()[arrayProperty] as List<String>;
+    final doctypeList = basicPerms?.toJson()[arrayProperty] as List<String>?;
 
     return doctypeList != null ? doctypeList.contains(doctype) : false;
   }
@@ -153,11 +153,11 @@ abstract class PermissionController<K extends RenovationDocument>
   ///
   /// In addition, verifies whether the user to which it was originally loaded is actually the current user.
   bool _validateBasicPerms() {
-    if (basicPerms == null || basicPerms.isLoading) {
+    if (basicPerms == null || basicPerms!.isLoading!) {
       return false;
     } else if (basicPerms != null &&
-        basicPerms.user != config.coreInstance.auth.currentUser) {
-      config.logger.e('renovation_core: Basic Perm Mismatch');
+        basicPerms!.user != config!.coreInstance.auth!.currentUser) {
+      config!.logger.e('renovation_core: Basic Perm Mismatch');
       basicPerms = null;
       return false;
     }

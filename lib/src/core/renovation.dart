@@ -42,54 +42,54 @@ class Renovation {
   //*************
 
   /// The `AuthController` instance
-  AuthController auth;
+  AuthController? auth;
 
   /// The `ModelController` instance
-  ModelController model;
+  ModelController? model;
 
   /// The `MetaController` instance
-  MetaController meta;
+  MetaController? meta;
 
   /// The `MetaController` instance
-  StorageController storage;
+  StorageController? storage;
 
   /// The `PermissionController` instance
-  PermissionController perm;
+  PermissionController? perm;
 
   /// The `DefaultsController` instance
-  DefaultsController defaults;
+  DefaultsController? defaults;
 
   /// The `RenovationConfig` instance
-  RenovationConfig config;
+  RenovationConfig? config;
 
   /// The `Frappe` instance
   ///
   /// Only initialized if the backend is `frappe`
-  Frappe frappe;
+  Frappe? frappe;
 
   /// The `LogManager` instance
-  LogManager log;
+  LogManager? log;
 
   /// The `TranslationController` instance
-  TranslationController translate;
+  TranslationController? translate;
 
   /// The `SocketIOClient` instance
-  SocketIOClient socketIo;
+  late SocketIOClient socketIo;
 
   /// The `MessageBus` property
   MessageBus bus = MessageBus();
 
   /// Method for calling custom cmds defined in the backend
-  Future<RequestResponse<FrappeResponse>> call(
+  Future<RequestResponse<FrappeResponse?>> call(
     Map<String, dynamic> args, {
     Map<String, dynamic> extraHeaders = const <String, dynamic>{},
     bool isFrappeResponse = true,
   }) {
     return Request.initiateRequest(
-        url: config.hostUrl,
+        url: config!.hostUrl,
         method: HttpMethod.POST,
         headers: <String, dynamic>{
-          ...RenovationRequestOptions.headers,
+          ...RenovationRequestOptions.headers!,
           ...extraHeaders
         },
         contentType: ContentTypeLiterals.APPLICATION_JSON,
@@ -101,15 +101,15 @@ class Renovation {
   BehaviorSubject<dynamic> messages = BehaviorSubject<dynamic>.seeded(null);
 
   /// Initialize the state of the renovation instance
-  Future<void> init<K extends SessionStatusInfo>(String hostUrl,
+  Future<void> init<K extends SessionStatusInfo>(String? hostUrl,
       {RenovationBackend backend = RenovationBackend.frappe,
-      String clientId,
-      K sessionStatusInfo,
-      String cookieDir,
+      String? clientId,
+      K? sessionStatusInfo,
+      String? cookieDir,
       bool useJWT = false,
       bool isBenchEnabled = false,
       bool disableLog = false,
-      Logger customLogger}) async {
+      Logger? customLogger}) async {
     final logger = customLogger ??
         Logger(
           filter: DebugFilter(disableLog: disableLog),
@@ -127,7 +127,7 @@ class Renovation {
     socketIo = SocketIOClient(config);
 
     if (backend == RenovationBackend.frappe) {
-      RenovationRequestOptions.headers = <String, String>{
+      RenovationRequestOptions.headers = <String, String?>{
         'Accept': 'application/json',
         'X-Requested-With': 'XMLHttpRequest'
       };
@@ -136,7 +136,7 @@ class Renovation {
 
       translate = FrappeTranslationController(config);
       auth = FrappeAuthController(config,
-          sessionStatusInfo: sessionStatusInfo as FrappeSessionStatusInfo);
+          sessionStatusInfo: sessionStatusInfo as FrappeSessionStatusInfo?);
 
       // Manage sessions using cookies instead of JWT
       if (!useJWT) {
@@ -146,7 +146,7 @@ class Renovation {
           throw CookieDirNotSet();
         }
       } else {
-        getFrappeAuthController().enableJWT();
+        getFrappeAuthController()!.enableJWT();
       }
 
       model = FrappeModelController(config);
@@ -161,7 +161,7 @@ class Renovation {
       // dashboard = FrappeDashboardController(config);
     }
     if (isBenchEnabled && clientId == null) {
-      await frappe.updateClientId();
+      await frappe!.updateClientId();
     }
 
     logger.v(
@@ -176,7 +176,7 @@ class Renovation {
   /// - [FrappePermissionController]
   /// - [Frappe]
   void clearCache() {
-    for (final renovationController in <RenovationController>[
+    for (final renovationController in <RenovationController?>[
       model,
       meta,
       auth,
@@ -198,7 +198,7 @@ class DebugFilter extends LogFilter {
   @override
   bool shouldLog(LogEvent event) {
     var shouldLog = false;
-    if (event.level.index >= level.index) {
+    if (event.level.index >= level!.index) {
       shouldLog = true;
     }
     return shouldLog && !disableLog;

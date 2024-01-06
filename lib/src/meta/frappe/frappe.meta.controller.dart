@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:collection/collection.dart' show IterableExtension;
 import 'package:meta/meta.dart';
 
 import '../../core/config.dart';
@@ -18,10 +19,10 @@ import 'interfaces.dart';
 
 /// A controller containing properties and methods about the models (meta data) related to Frappé.
 class FrappeMetaController extends MetaController {
-  FrappeMetaController(RenovationConfig config) : super(config);
+  FrappeMetaController(RenovationConfig? config) : super(config);
 
   /// Holds the doctype's in the cache
-  Map<String, DocType> docTypeCache = <String, DocType>{};
+  Map<String?, DocType> docTypeCache = <String?, DocType>{};
 
   /// Returns the number of documents of a [doctype] available in the backend within [RequestResponse].
   ///
@@ -31,13 +32,13 @@ class FrappeMetaController extends MetaController {
   ///
   /// If the doctype does not exist, returns a failed [RequestResponse].
   @override
-  Future<RequestResponse<int>> getDocCount(
-      {@required String doctype, dynamic filters}) async {
+  Future<RequestResponse<int?>> getDocCount(
+      {required String doctype, dynamic filters}) async {
     if (filters != null) {
       if (!DBFilter.isDBFilter(filters)) throw InvalidFrappeFilter();
     }
     final response = await Request.initiateRequest(
-        url: '${config.hostUrl}',
+        url: '${config!.hostUrl}',
         method: HttpMethod.POST,
         contentType: ContentTypeLiterals.APPLICATION_JSON,
         data: <String, dynamic>{
@@ -47,7 +48,7 @@ class FrappeMetaController extends MetaController {
           'filters': filters != null ? jsonEncode(filters) : null
         });
     if (response.isSuccess) {
-      Map resultAsMap = response.data.message;
+      Map resultAsMap = response.data!.message;
       // Since the response is an array of array
       return RequestResponse.success(resultAsMap['values']?.first?.first);
     }
@@ -58,10 +59,10 @@ class FrappeMetaController extends MetaController {
   ///
   /// Returns a failed [RequestResponse] in case the [doctype] and/or [docname] do not exist in the backend.
   @override
-  Future<RequestResponse<FrappeDocInfo>> getDocInfo(
-      {@required String doctype, @required String docname}) async {
+  Future<RequestResponse<FrappeDocInfo?>> getDocInfo(
+      {required String? doctype, required String? docname}) async {
     final response = await Request.initiateRequest(
-        url: '${config.hostUrl}',
+        url: '${config!.hostUrl}',
         method: HttpMethod.GET,
         contentType: ContentTypeLiterals.QUERY_STRING,
         isFrappeResponse: false,
@@ -71,7 +72,7 @@ class FrappeMetaController extends MetaController {
           'name': docname
         });
     if (response.isSuccess) {
-      final Map<String, dynamic> result = response.data.message;
+      final Map<String, dynamic>? result = response.data!.message;
       if (result != null) {
         return RequestResponse.success(
             FrappeDocInfo.fromJson(result['docinfo']),
@@ -88,8 +89,8 @@ class FrappeMetaController extends MetaController {
         return RequestResponse.fail(handleError('get_doc_info', error));
       }
     } else {
-      return RequestResponse.fail(
-          handleError('get_doc_info', response.error ?? response.data));
+      return RequestResponse.fail(handleError(
+          'get_doc_info', response.error ?? response.data as ErrorDetail?));
     }
   }
 
@@ -99,19 +100,19 @@ class FrappeMetaController extends MetaController {
   ///
   /// Returns a failed [RequestResponse] if the doctype doesn't exist in the backend.
   @override
-  Future<RequestResponse<DocType>> getDocMeta(
-      {@required String doctype}) async {
-    await getFrappe().checkAppInstalled(features: ['getDocMeta']);
+  Future<RequestResponse<DocType?>> getDocMeta(
+      {required String? doctype}) async {
+    await getFrappe()!.checkAppInstalled(features: ['getDocMeta']);
 
     if (docTypeCache.containsKey(doctype) && docTypeCache[doctype] != null) {
       if (docTypeCache.containsKey(doctype) &&
           docTypeCache[doctype] != null &&
-          !docTypeCache[doctype].isLoading) {
+          !docTypeCache[doctype]!.isLoading) {
         return RequestResponse.success(docTypeCache[doctype]);
       } else {
         while (docTypeCache.containsKey(doctype) &&
             docTypeCache[doctype] != null &&
-            docTypeCache[doctype].isLoading) {
+            docTypeCache[doctype]!.isLoading) {
           await Future<void>.delayed(Duration(milliseconds: 100));
         }
         if (docTypeCache.containsKey(doctype) &&
@@ -128,7 +129,7 @@ class FrappeMetaController extends MetaController {
       // FIXME: Core-Dart doesn't support scripts currently
       //    config.coreInstance.scriptManager.events[doctype] = {};
       final response = await Request.initiateRequest(
-          url: config.hostUrl,
+          url: config!.hostUrl,
           method: HttpMethod.POST,
           contentType: ContentTypeLiterals.APPLICATION_JSON,
           data: <String, dynamic>{
@@ -137,9 +138,9 @@ class FrappeMetaController extends MetaController {
           });
 
       if (response.isSuccess) {
-        final metas = <String, DocType>{};
+        final metas = <String?, DocType>{};
         final metasDeserialized = List<DocType>.from(
-            (response.data.message['metas'] as List)
+            (response.data!.message['metas'] as List)
                 .map((dynamic _meta) => DocType.fromJson(_meta))
                 .toList());
         // local var first, Object.assign together later
@@ -148,18 +149,18 @@ class FrappeMetaController extends MetaController {
             metas[dmeta.name] = dmeta;
             // append __messages for translations
 
-            config.coreInstance.translate.extendDictionary(
+            config!.coreInstance.translate!.extendDictionary(
                 dict: dmeta.messages != null
-                    ? dmeta.messages.cast<String, String>()
+                    ? dmeta.messages!.cast<String, String>()
                     : null);
           }
         }
         docTypeCache.addAll(metas);
         // trigger read perm which creates the perm dict in rcore.perms.doctypePerms
-        metas.forEach((String k, DocType v) {
-          if (v.isTable == null || !v.isTable) {
+        metas.forEach((String? k, DocType v) {
+          if (v.isTable == null || !v.isTable!) {
             // perm for normal doctypes only, not for Child docs
-            config.coreInstance.perm
+            config!.coreInstance.perm!
                 .hasPerm(doctype: k, pType: PermissionType.read);
           }
         });
@@ -179,8 +180,8 @@ class FrappeMetaController extends MetaController {
   ///
   /// If the doctype or the field doesn't exist, [fieldName] is returned.
   @override
-  Future<String> getFieldLabel(
-      {@required String doctype, @required String fieldName}) async {
+  Future<String?> getFieldLabel(
+      {required String doctype, required String fieldName}) async {
     final response = await getDocMeta(doctype: doctype);
     dynamic label = fieldName;
     final standardFields = <String, String>{
@@ -191,60 +192,60 @@ class FrappeMetaController extends MetaController {
       label = standardFields[fieldName];
     }
     if (!response.isSuccess) {
-      config.logger.e('getFieldLabel: Failed to read docmeta');
+      config!.logger.e('getFieldLabel: Failed to read docmeta');
     } else {
-      final docMeta = response.data;
-      var field = docMeta.fields
-          .singleWhere((f) => f.fieldName == fieldName, orElse: () => null);
+      final docMeta = response.data!;
+      var field =
+          docMeta.fields!.singleWhereOrNull((f) => f.fieldName == fieldName);
 
-      field ??= docMeta.disabledFields
-          .singleWhere((f) => f.fieldName == fieldName, orElse: () => null);
+      field ??= docMeta.disabledFields!
+          .singleWhereOrNull((f) => f.fieldName == fieldName);
       if (field != null) {
         label = field.label;
       } else {
         label = toTitleCase(label);
       }
     }
-    return config.coreInstance.translate.getMessage(txt: label);
+    return config!.coreInstance.translate!.getMessage(txt: label);
   }
 
   /// Returns the meta details of a Frappé report as a [RenovationReport].
   ///
   /// If the [report] doesn't exist, a failed [RequestResponse] is returned.
   @override
-  Future<RequestResponse<RenovationReport>> getReportMeta(
-          {@required String report}) async =>
-      await config.coreInstance.model.getDoc(RenovationReport(), report);
+  Future<RequestResponse<RenovationReport?>> getReportMeta(
+          {required String report}) async =>
+      config!.coreInstance.model!.getDoc(RenovationReport(), report);
 
   ///Clears all docMeta from the cache
   @override
-  void clearCache() => docTypeCache = <String, DocType>{};
+  void clearCache() => docTypeCache = <String?, DocType>{};
 
   @override
-  ErrorDetail handleError(String errorId, ErrorDetail error) {
+  ErrorDetail handleError(String? errorId, ErrorDetail? error) {
     ErrorDetail err;
     switch (errorId) {
       case 'get_doc_count':
-        bool containsMissingTable = error.info.rawError?.response?.data
+        bool containsMissingTable = error!.info!.rawError?.response?.data
                 ?.contains('TableMissingError') ??
             false;
-        if (error.info.httpCode == 404 || containsMissingTable) {
+        if (error.info!.httpCode == 404 || containsMissingTable) {
           err = handleError('doctype_not_exist', error);
         } else {
           err = handleError(null, error);
         }
         break;
       case 'get_doc_meta':
-        if (error.info.httpCode == 404) {
+        if (error!.info!.httpCode == 404) {
           err = handleError('doctype_not_exist', error);
         } else {
           err = handleError(null, error);
         }
         break;
       case 'get_doc_info':
-        if (identical(error.info.httpCode, 404)) {
+        if (identical(error!.info!.httpCode, 404)) {
           err = handleError('docname_not_exist', error);
-        } else if (identical(error.info.httpCode, 500)) {
+        } else if (identical(error.info!.httpCode, 500)) {
           err = handleError('doctype_not_exist', error);
         } else if (identical(error.title, 'DocInfo Not Found')) {
           error.type = RenovationError.NotFoundError;
@@ -258,7 +259,7 @@ class FrappeMetaController extends MetaController {
         break;
       case 'doctype_not_exist':
         error
-          ..title = FrappeModelController.DOCTYPE_NOT_EXIST_TITLE
+          ?..title = FrappeModelController.DOCTYPE_NOT_EXIST_TITLE
           ..type = RenovationError.NotFoundError
           ..info = (error.info = Information(
               data: error.info,
@@ -266,21 +267,21 @@ class FrappeMetaController extends MetaController {
               cause: FrappeModelController.DOCTYPE_NOT_EXIST_TITLE,
               suggestion:
                   'Make sure the queried doctype is correct or create the required doctype'));
-        err = ErrorDetail(title: error.title, info: error.info);
+        err = ErrorDetail(title: error!.title, info: error.info);
         break;
       case 'docname_not_exist':
         error
-          ..title = FrappeModelController.DOCNAME_NOT_EXIST_TITLE
+          ?..title = FrappeModelController.DOCNAME_NOT_EXIST_TITLE
           ..type = RenovationError.NotFoundError
           ..info = (error.info
-            ..httpCode = 404
+            ?..httpCode = 404
             ..cause = FrappeModelController.DOCNAME_NOT_EXIST_TITLE
             ..suggestion =
                 'Make sure the queried document name is correct or create the required document');
-        err = ErrorDetail(title: error.title, info: error.info);
+        err = ErrorDetail(title: error!.title, info: error.info);
         break;
       default:
-        err = RenovationController.genericError(error);
+        err = RenovationController.genericError(error!);
     }
     return err;
   }
