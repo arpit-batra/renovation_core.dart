@@ -110,13 +110,13 @@ class Renovation {
       bool isBenchEnabled = false,
       bool disableLog = false,
       Logger? customLogger}) async {
+    print("Renovation Cunstructor called");
     final logger = customLogger ??
         Logger(
           filter: DebugFilter(disableLog: disableLog),
           printer: PrettyPrinter(colors: true, methodCount: 0),
         );
 
-    backend ??= RenovationBackend.frappe;
     final startTime = DateTime.now();
     if (clientId != null) {
       Request.setClientId(clientId);

@@ -18,7 +18,7 @@ FrappeStorageController? getFrappeStorageController() =>
     Renovation()?.storage as FrappeStorageController?;
 
 FrappeAuthController? getFrappeAuthController() =>
-    Renovation()?.auth as FrappeAuthController?;
+    Renovation().auth as FrappeAuthController?;
 
 FrappeMetaController? getFrappeMetaController() =>
     Renovation()?.meta as FrappeMetaController?;
@@ -32,6 +32,7 @@ FrappeTranslationController? getFrappeTranslationController() =>
 FrappeDefaultsController? getFrappeDefaultsController() =>
     Renovation()?.defaults as FrappeDefaultsController?;
 
-FrappeLogManager? getFrappeLogManager() => Renovation()?.log as FrappeLogManager?;
+FrappeLogManager? getFrappeLogManager() =>
+    Renovation()?.log as FrappeLogManager?;
 
 Frappe? getFrappe() => Renovation()?.frappe;
