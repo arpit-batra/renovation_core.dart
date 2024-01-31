@@ -1,4 +1,5 @@
 import 'dart:core';
+import 'dart:developer' as LOGG;
 
 import 'package:logger/logger.dart';
 import 'package:rxdart/rxdart.dart';
@@ -111,6 +112,8 @@ class Renovation {
       bool disableLog = false,
       Logger? customLogger}) async {
     print("Renovation Cunstructor called");
+    LOGG.log("init called");
+
     final logger = customLogger ??
         Logger(
           filter: DebugFilter(disableLog: disableLog),
@@ -118,11 +121,12 @@ class Renovation {
         );
 
     final startTime = DateTime.now();
+    config = RenovationConfig(this, backend, hostUrl, logger);
+    RenovationConfig.renovationInstance = config;
+
     if (clientId != null) {
       Request.setClientId(clientId);
     }
-    config = RenovationConfig(this, backend, hostUrl, logger);
-    RenovationConfig.renovationInstance = config;
 
     socketIo = SocketIOClient(config);
 
