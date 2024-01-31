@@ -129,7 +129,7 @@ class Renovation {
     }
 
     socketIo = SocketIOClient(config);
-
+    LOGG.log("SocketIO initiated");
     if (backend == RenovationBackend.frappe) {
       RenovationRequestOptions.headers = <String, String?>{
         'Accept': 'application/json',
