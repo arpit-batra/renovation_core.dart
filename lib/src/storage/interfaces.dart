@@ -11,7 +11,7 @@ abstract class UploadFileParams extends JSONAble {
       this.fileData,
       this.fileSize});
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   dynamic file;
   @JsonKey(name: 'filename')
   String? fileName;
@@ -38,7 +38,7 @@ enum ErrorEvent {
   socket_timeout
 }
 
-abstract class UploadFileStatus extends JSONAble{
+abstract class UploadFileStatus extends JSONAble {
   UploadingStatus? status;
   bool? hasProgress;
   num? progress;

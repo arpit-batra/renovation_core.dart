@@ -11,7 +11,7 @@ part 'interfaces.g.dart';
 @JsonSerializable()
 class FrappeUploadFileParams extends UploadFileParams with FrappeAPI {
   FrappeUploadFileParams(
-      {required dynamic file,
+      {this.file,
       required String? fileName,
       this.isPrivate,
       this.folder = 'Home',
@@ -28,6 +28,11 @@ class FrappeUploadFileParams extends UploadFileParams with FrappeAPI {
       toJson: FrappeDocFieldConverter.boolToCheck,
       fromJson: FrappeDocFieldConverter.checkToBool)
   bool? isPrivate;
+
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  dynamic file;
+
   @JsonKey()
   String? folder;
   String? doctype;
